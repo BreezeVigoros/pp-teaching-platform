@@ -387,7 +387,11 @@ body {
 }
 .footer p { margin: 4px 0; }
 
-/* ===== 响应式 ===== */
+/* ===== 仪表盘模块全屏嵌入 ===== */
+#module-8.active { display: flex; flex-direction: column; height: calc(100vh - 140px); }
+#module-8 .module-header { flex-shrink: 0; }
+#module-8 iframe { flex: 1; }
+@media (max-width: 768px) { #module-8.active { height: calc(100vh - 120px); } }
 @media (max-width: 768px) {
   .data-dashboard { grid-template-columns: repeat(2, 1fr); }
   .monitor-grid { grid-template-columns: repeat(3, 1fr); }
