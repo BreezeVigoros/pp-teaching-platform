@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PP期货交割库虚拟仿真教学平台</title>
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
 
@@ -140,14 +142,8 @@
     <!-- 产业地图 -->
     <div class="card">
       <h3>🗺️ 浙南PP产业链地理分布</h3>
-      <div class="geo-map" id="geoMap">
-        <div class="geo-node" style="top:15%;left:40%" data-info="平阳萧江镇：200+塑编企业\n中国塑编之都\n200亿产值目标">萧江镇<br><small>塑编之都</small></div>
-        <div class="geo-node" style="top:25%;left:30%" data-info="苍南县：600+塑料企业\n79.21亿产值\n35万吨年产量">苍南县<br><small>塑编重镇</small></div>
-        <div class="geo-node" style="top:20%;left:50%" data-info="龙港市：全球最大BOPP基地\n金田新材61.95万吨产能\n年出口12-13万吨">龙港市<br><small>BOPP集群</small></div>
-        <div class="geo-node supplier" style="top:5%;left:20%" data-info="宁波：PDH工厂PP产能\n3家PP交割库">宁波<br><small>北上供应</small></div>
-        <div class="geo-node supplier" style="top:50%;left:15%" data-info="福建泉州/福清：中化石化、中景石化\nPP北上进入温州 300-400km">福建<br><small>南下供应</small></div>
-        <div class="geo-legend">📍 点击节点查看详情</div>
-      </div>
+      <div id="geoMap" class="geo-map" style="height:340px;"></div>
+      <p class="wh-legend">📍 点击标记查看详情 | 🟢 核心产区 🟠 PP供应来源</p>
     </div>
   </div>
 </section>
@@ -693,14 +689,14 @@
 
 <!-- ====== 模块8：综合仪表盘 ====== -->
 <section id="module-8" class="module">
+  <div class="module-close-bar">
+    <button onclick="switchTabDirect(0)" style="padding:8px 18px;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">✕ 返回教学平台</button>
+  </div>
   <div class="module-header" style="padding:10px 20px;">
     <h2>📊 综合仪表盘</h2>
     <p>全国PP期货交割库分布 · 温州塑编产业数据 · 项目关联分析</p>
   </div>
-  <div style="flex:1;overflow:hidden;position:relative;">
-    <iframe src="dashboard.html" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"
-            title="综合仪表盘" allow="fullscreen" loading="lazy"></iframe>
-  </div>
+  <iframe src="dashboard.html" title="综合仪表盘" allow="fullscreen" loading="lazy"></iframe>
 </section>
 
 </main>

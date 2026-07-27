@@ -9,12 +9,24 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
     tab.classList.add('active');
     const moduleId = 'module-' + tab.dataset.module;
-    document.getElementById(moduleId).classList.add('active');
+    const target = document.getElementById(moduleId);
+    if (target) target.classList.add('active');
     if (tab.dataset.module == '1') initPriceChart();
     if (tab.dataset.module == '3') calcFinance();
     if (tab.dataset.module == '4') initHedgeChart();
+    if (tab.dataset.module == '0') initGeoMap();
   });
 });
+
+// 直接切换到指定模块
+function switchTabDirect(index) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+  const tab = document.querySelector('.tab[data-module="' + index + '"]');
+  if (tab) tab.classList.add('active');
+  const target = document.getElementById('module-' + index);
+  if (target) target.classList.add('active');
+}
 
 // ---- 价格图表 ----
 let priceChart = null;
@@ -194,6 +206,7 @@ function showPainDetail(index) {
 }
 
 // ---- 地理图节点 ----
+// (保留旧事件以防 HTML 中还有引用)
 document.querySelectorAll('.geo-node').forEach(node => {
   node.addEventListener('click', function(e) {
     const info = this.dataset.info;
@@ -397,11 +410,79 @@ setInterval(() => {
   if (humEl) humEl.textContent = (50 + Math.random() * 8).toFixed(1);
 }, 5000);
 
+// ---- 浙南PP产业链地理分布 Leaflet 地图 ----
+let geoMapInstance = null;
+
+function initGeoMap() {
+  const el = document.getElementById('geoMap');
+  if (!el || geoMapInstance) return;
+  if (el.offsetWidth === 0) { setTimeout(initGeoMap, 500); return; }
+
+  geoMapInstance = L.map('geoMap', {
+    center: [27.6, 120.5],
+    zoom: 9,
+    zoomControl: true,
+    attributionControl: false
+  });
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19,
+    subdomains: 'abcd'
+  }).addTo(geoMapInstance);
+
+  L.control.attribution({ position: 'bottomright', prefix: false })
+    .addAttribution('© CARTO')
+    .addTo(geoMapInstance);
+
+  // 核心产区标记（绿色）
+  var coreIcon = L.divIcon({
+    className: '', html: '<div style="background:#529286;color:white;width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>',
+    iconSize: [14,14], iconAnchor: [7,7]
+  });
+
+  // PP供应来源（橙色）
+  var supplyIcon = L.divIcon({
+    className: '', html: '<div style="background:#e67e22;color:white;width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>',
+    iconSize: [14,14], iconAnchor: [7,7]
+  });
+
+  var markers = [
+    { lat: 27.589, lng: 120.428, type: 'core', name: '萧江镇（平阳县）', subtitle: '中国塑编之都', desc: '200+塑编企业 · 年产值122.6亿（2025）<br>"十五五"冲刺200亿产值目标<br>萧江塑编工业园1,650亩' },
+    { lat: 27.504, lng: 120.396, type: 'core', name: '灵溪镇（苍南县）', subtitle: '塑编产业重镇', desc: '600+塑料制品企业 · 规上产值79.21亿（2024）<br>年产量35万余吨编织袋<br>占苍南规上工业比23.7%' },
+    { lat: 27.581, lng: 120.548, type: 'core', name: '龙港市', subtitle: '全球最大BOPP基地', desc: '金田新材61.95万吨BOPP产能<br>16条BOPP生产线 · 年出口12-13万吨<br>2022年新材料产值200余亿元' },
+    { lat: 28.002, lng: 120.699, type: 'core', name: '温州市区', subtitle: '浙南经济中心', desc: '温州市2019年塑料制品产量约223万吨<br>浙南PP消费总量约180万吨/年<br>辐射苍南、平阳、瑞安、龙港' },
+    { lat: 29.960, lng: 121.715, type: 'supply', name: '宁波（镇海）', subtitle: '北上PP供应 · 约250km', desc: 'PDH工厂PP产能 · 镇海炼化<br>3家PP期货交割库<br>宁波舟山港石化集群' },
+    { lat: 25.723, lng: 119.384, type: 'supply', name: '福清（福建）', subtitle: '南下PP供应 · 约350km', desc: '中景石化PP产能<br>福建北上进入温州主要来源<br>300-400km汽运可达' },
+    { lat: 24.874, lng: 118.676, type: 'supply', name: '泉州（福建）', subtitle: '南下PP供应 · 约420km', desc: '中化石化PP装置<br>福建北上补充供应<br>海运+陆运结合' },
+    { lat: 27.779, lng: 120.633, type: 'core', name: '瑞安市', subtitle: '塑料制品产业集群', desc: '塑料包装及制品企业密集<br>紧邻平阳萧江和苍南<br>产业链配套完善' },
+  ];
+
+  markers.forEach(function(m) {
+    var icon = m.type === 'core' ? coreIcon : supplyIcon;
+    L.marker([m.lat, m.lng], { icon: icon })
+      .bindPopup('<div style="min-width:200px;font-family:Microsoft YaHei,sans-serif;font-size:13px;line-height:1.6;">' +
+        '<strong style="font-size:15px;color:#0B1C2C;">' + m.name + '</strong><br>' +
+        '<span style="color:#529286;font-weight:600;">' + m.subtitle + '</span><br><br>' +
+        m.desc + '</div>')
+      .addTo(geoMapInstance);
+  });
+
+  geoMapInstance.fitBounds([[24.5, 118.3], [30.3, 122.0]], { padding: [20, 20] });
+
+  if (window.ResizeObserver) {
+    new ResizeObserver(function() {
+      if (geoMapInstance) geoMapInstance.invalidateSize();
+    }).observe(el);
+  }
+}
+
 // ---- 初始化 ----
 document.addEventListener('DOMContentLoaded', () => {
   initPriceChart();
   initHedgeChart();
   calcFinance();
+  // 延迟初始化地图，避免容器不可见
+  setTimeout(initGeoMap, 300);
   console.log('🏗️ PP期货交割库虚拟仿真教学平台 V2.0 已就绪');
   console.log('📊 数据来源：大商所、平阳/苍南县政府公开信息、卓创资讯');
   console.log('🎓 参照标准：国家级虚拟仿真实验教学项目');
